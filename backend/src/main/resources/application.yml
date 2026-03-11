@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/career_nav}
+    username: ${SPRING_DATASOURCE_USERNAME:career_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:career_pass}
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/init/schema-patch.sql
+      continue-on-error: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:replace-with-a-long-random-secret-replace-with-a-long-random-secret}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  ai:
+    base-url: ${AI_SERVICE_BASE_URL:http://localhost:8000}
+  cors:
+    allowed-origin: ${FRONTEND_BASE_URL:http://localhost:3000}

@@ -1,0 +1,45 @@
+INSERT INTO careers (id, career_name, description, avg_salary, job_security, growth_rate, difficulty, job_demand, work_life_balance)
+VALUES
+  ('10000000-0000-0000-0000-000000000001', 'Data Scientist', 'Build predictive models and derive insights from large datasets to support business decisions.', 115000, 'High', 'Very High', 'Advanced', 'High', 'Moderate'),
+  ('10000000-0000-0000-0000-000000000002', 'Software Engineer', 'Design, develop, test, and maintain software systems and applications.', 105000, 'High', 'High', 'Intermediate', 'Very High', 'Moderate'),
+  ('10000000-0000-0000-0000-000000000003', 'Product Manager', 'Define product strategy, gather requirements, and coordinate teams to deliver product outcomes.', 120000, 'High', 'High', 'Intermediate', 'High', 'Moderate'),
+  ('10000000-0000-0000-0000-000000000004', 'Cybersecurity Analyst', 'Protect systems from security threats through monitoring, audits, and incident response.', 102000, 'High', 'High', 'Intermediate', 'High', 'Good'),
+  ('10000000-0000-0000-0000-000000000005', 'UI/UX Designer', 'Create intuitive interfaces and improve digital user experiences through research and design.', 88000, 'Moderate', 'High', 'Intermediate', 'High', 'Good')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO skills (id, skill_name, category)
+VALUES
+  ('20000000-0000-0000-0000-000000000001', 'Python', 'Programming'),
+  ('20000000-0000-0000-0000-000000000002', 'SQL', 'Data'),
+  ('20000000-0000-0000-0000-000000000003', 'Machine Learning', 'AI'),
+  ('20000000-0000-0000-0000-000000000004', 'Statistics', 'Data'),
+  ('20000000-0000-0000-0000-000000000005', 'System Design', 'Engineering'),
+  ('20000000-0000-0000-0000-000000000006', 'Java', 'Programming'),
+  ('20000000-0000-0000-0000-000000000007', 'Communication', 'Soft Skills'),
+  ('20000000-0000-0000-0000-000000000008', 'Product Strategy', 'Product'),
+  ('20000000-0000-0000-0000-000000000009', 'Risk Assessment', 'Security'),
+  ('20000000-0000-0000-0000-000000000010', 'Network Security', 'Security'),
+  ('20000000-0000-0000-0000-000000000011', 'Figma', 'Design'),
+  ('20000000-0000-0000-0000-000000000012', 'User Research', 'Design')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO career_skills (career_id, skill_id)
+VALUES
+  ('10000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001'),
+  ('10000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000002'),
+  ('10000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000003'),
+  ('10000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000004'),
+  ('10000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000001'),
+  ('10000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000005'),
+  ('10000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000006'),
+  ('10000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000007'),
+  ('10000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000007'),
+  ('10000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000008'),
+  ('10000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000002'),
+  ('10000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000009'),
+  ('10000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000010'),
+  ('10000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000007'),
+  ('10000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000011'),
+  ('10000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000012'),
+  ('10000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000007')
+ON CONFLICT DO NOTHING;

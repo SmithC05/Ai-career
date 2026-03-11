@@ -1,0 +1,105 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: acn-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-career_nav}
+      POSTGRES_USER: ${POSTGRES_USER:-career_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-career_pass}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/2-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-career_user} -d ${POSTGRES_DB:-career_nav}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: acn-ollama
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: acn-ollama-init
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL_ADVISOR: ${OLLAMA_MODEL_ADVISOR:-llama3:8b}
+      OLLAMA_MODEL_ROADMAP: ${OLLAMA_MODEL_ROADMAP:-mistral}
+      OLLAMA_MODEL_LIGHT: ${OLLAMA_MODEL_LIGHT:-phi3:mini}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        ollama pull ${OLLAMA_MODEL_ADVISOR:-llama3:8b} &&
+        ollama pull ${OLLAMA_MODEL_ROADMAP:-mistral} &&
+        ollama pull ${OLLAMA_MODEL_LIGHT:-phi3:mini}
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: "no"
+
+  ai-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ai-service
+    container_name: acn-ai-service
+    environment:
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      OLLAMA_MODEL_ADVISOR: ${OLLAMA_MODEL_ADVISOR:-llama3:8b}
+      OLLAMA_MODEL_ROADMAP: ${OLLAMA_MODEL_ROADMAP:-mistral}
+      OLLAMA_MODEL_LIGHT: ${OLLAMA_MODEL_LIGHT:-phi3:mini}
+    ports:
+      - "${AI_SERVICE_PORT:-8000}:8000"
+    depends_on:
+      ollama-init:
+        condition: service_completed_successfully
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: acn-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-career_nav}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-career_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-career_pass}
+      JWT_SECRET: ${JWT_SECRET:-replace-with-a-long-random-secret}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      AI_SERVICE_BASE_URL: http://ai-service:8000
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:3000}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai-service:
+        condition: service_started
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: acn-frontend
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080/api/v1}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      backend:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  ollama_data:

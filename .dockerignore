@@ -1,0 +1,15 @@
+.git
+.gitignore
+
+frontend/node_modules
+frontend/.next
+frontend/.turbo
+
+backend/target
+
+ai-service/.venv
+ai-service/__pycache__
+
+**/__pycache__
+**/.pytest_cache
+**/.DS_Store
