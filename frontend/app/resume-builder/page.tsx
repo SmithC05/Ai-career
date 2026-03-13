@@ -43,22 +43,24 @@ function parseResumePortfolio(content: string): ResumePortfolioResult | null {
 export default function ResumeBuilderPage() {
   const ready = useAuthGuard();
 
-  const [targetCareer, setTargetCareer] = useState("Data Scientist");
-  const [fullName, setFullName] = useState("Aarav Sharma");
-  const [education, setEducation] = useState("B.Tech in Computer Science, Final Year");
-  const [skillsInput, setSkillsInput] = useState("Python, SQL, Machine Learning, Power BI");
-  const [projectsInput, setProjectsInput] = useState("Sales forecasting model, Student performance dashboard");
-  const [achievementsInput, setAchievementsInput] = useState("Top 5 in hackathon, AWS Cloud Practitioner");
-  const [experiencesInput, setExperiencesInput] = useState("Data analyst intern at startup");
-  const [linksInput, setLinksInput] = useState("github.com/yourhandle, linkedin.com/in/yourhandle");
+  const [targetCareer, setTargetCareer] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [education, setEducation] = useState("");
+  const [skillsInput, setSkillsInput] = useState("");
+  const [projectsInput, setProjectsInput] = useState("");
+  const [achievementsInput, setAchievementsInput] = useState("");
+  const [experiencesInput, setExperiencesInput] = useState("");
+  const [linksInput, setLinksInput] = useState("");
 
   const [generated, setGenerated] = useState<GeneratedResumePortfolioResponse | null>(null);
   const [history, setHistory] = useState<ResumePortfolioListItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!ready) return;
+    setLoadingHistory(true);
 
     api.getResumePortfolios()
       .then((items) => {
@@ -67,7 +69,10 @@ export default function ResumeBuilderPage() {
           setJourneyState({ builtResumePortfolio: true });
         }
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load resume history"));
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Unable to load resume history. Please try again.")
+      )
+      .finally(() => setLoadingHistory(false));
   }, [ready]);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -106,13 +111,13 @@ export default function ResumeBuilderPage() {
          document.getElementById("generated-resume")?.scrollIntoView({ behavior: "smooth" });
       }, 100);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to generate resume and portfolio pack");
+      setError(err instanceof Error ? err.message : "Unable to generate resume and portfolio pack. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!ready) return null;
+  if (!ready) return <AnimatedLoader text="Loading resume builder..." fullScreen />;
 
   return (
     <div className="flex flex-col gap-10 pb-24 relative">
@@ -148,6 +153,7 @@ export default function ResumeBuilderPage() {
                         <Input 
                           value={fullName} 
                           onChange={(event) => setFullName(event.target.value)} 
+                          placeholder="e.g. Alex Doe"
                           className="pl-10 bg-white/[0.03] border-white/10 text-white focus-visible:ring-blue-500/50" 
                           required 
                         />
@@ -160,6 +166,7 @@ export default function ResumeBuilderPage() {
                         <Input 
                           value={targetCareer} 
                           onChange={(event) => setTargetCareer(event.target.value)} 
+                          placeholder="e.g. Data Scientist"
                           className="pl-10 bg-white/[0.03] border-white/10 text-white focus-visible:ring-blue-500/50" 
                           required 
                         />
@@ -174,6 +181,7 @@ export default function ResumeBuilderPage() {
                       <Input 
                         value={education} 
                         onChange={(event) => setEducation(event.target.value)} 
+                        placeholder="e.g. B.Tech in Computer Science, Final Year"
                         className="pl-10 bg-white/[0.03] border-white/10 text-white focus-visible:ring-blue-500/50" 
                         required 
                       />
@@ -186,6 +194,7 @@ export default function ResumeBuilderPage() {
                     <Input 
                       value={skillsInput} 
                       onChange={(event) => setSkillsInput(event.target.value)} 
+                      placeholder="e.g. Python, SQL, Machine Learning"
                       className="bg-white/[0.03] border-white/10 text-white focus-visible:ring-blue-500/50" 
                       required 
                     />
@@ -197,6 +206,7 @@ export default function ResumeBuilderPage() {
                     <Input 
                       value={projectsInput} 
                       onChange={(event) => setProjectsInput(event.target.value)} 
+                      placeholder="e.g. Sales forecasting model"
                       className="bg-white/[0.03] border-white/10 text-white focus-visible:ring-blue-500/50" 
                     />
                   </div>
@@ -367,7 +377,9 @@ export default function ResumeBuilderPage() {
                  <CardTitle className="text-base flex items-center gap-2"><FileText className="w-4 h-4 text-slate-400" /> Generation History</CardTitle>
                </CardHeader>
                <CardContent className="pt-4 p-0">
-                  {history.length === 0 ? (
+                  {loadingHistory ? (
+                    <AnimatedLoader text="Loading generation history..." className="py-8" />
+                  ) : history.length === 0 ? (
                     <div className="p-6 text-center text-white/40 text-sm">No saved resume packs yet.</div>
                   ) : (
                     <div className="divide-y divide-white/5 max-h-[600px] overflow-y-auto custom-scrollbar">

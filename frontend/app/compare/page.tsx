@@ -1,14 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRightLeft, Sparkles, AlertCircle, TrendingUp, BriefcaseBusiness, Compass, Activity, ShieldCheck, Scale, Award } from "lucide-react";
+import { ArrowRightLeft, TrendingUp, BriefcaseBusiness, Activity, ShieldCheck, Scale } from "lucide-react";
 
 import { EmptyState } from "@/components/empty-state";
 import { FeedbackBanner } from "@/components/feedback-banner";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { FadeIn, SlideUp, StaggerChildren, StaggerItem } from "@/components/motion";
 import { AnimatedLoader } from "@/components/animated-loader";
 import { api } from "@/lib/api";
@@ -47,9 +48,11 @@ export default function ComparePage() {
   const [result, setResult] = useState<CareerComparison | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingCareers, setLoadingCareers] = useState(true);
 
   useEffect(() => {
     if (!ready) return;
+    setLoadingCareers(true);
 
     api.getCareers()
       .then((items) => {
@@ -59,7 +62,8 @@ export default function ComparePage() {
           setCareerB(items[1].id);
         }
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load careers"));
+      .catch((err) => setError(err instanceof Error ? err.message : "Unable to load careers. Please try again."))
+      .finally(() => setLoadingCareers(false));
   }, [ready]);
 
   const selectedA = useMemo(() => careers.find((career) => career.id === careerA) ?? null, [careerA, careers]);
@@ -84,13 +88,13 @@ export default function ComparePage() {
         document.getElementById("compare-results")?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Comparison failed");
+      setError(err instanceof Error ? err.message : "Unable to compare careers right now. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!ready) return null;
+  if (!ready) return <AnimatedLoader text="Loading comparison workspace..." fullScreen />;
 
   return (
     <div className="flex flex-col gap-10 pb-24 relative">
@@ -110,12 +114,18 @@ export default function ComparePage() {
 
       {error && <FeedbackBanner message={error} tone="error" className="mb-2" />}
 
-      {careers.length < 2 ? (
+      {loadingCareers ? (
+        <AnimatedLoader text="Loading careers for comparison..." />
+      ) : careers.length < 2 ? (
         <SlideUp>
           <EmptyState
             title="Insufficient Career Data"
             description="Comparison requires at least two distinct careers. Explore the job market to collect more roles."
-            action={<Button onClick={() => window.location.href='/careers'}>Explore Careers</Button>}
+            action={
+              <Link href="/careers">
+                <Button>Explore Careers</Button>
+              </Link>
+            }
           />
         </SlideUp>
       ) : (
@@ -133,6 +143,7 @@ export default function ComparePage() {
                       className="h-14 w-full rounded-2xl border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-md px-4 text-base font-semibold text-white focus:outline-none focus:ring-1 focus:ring-blue-500/50 appearance-none transition-colors hover:border-white/20 shadow-inner"
                       value={careerA}
                       onChange={(event) => setCareerA(event.target.value)}
+                      disabled={loadingCareers}
                     >
                       {careers.map((career) => (
                         <option key={career.id} value={career.id}>
@@ -161,6 +172,7 @@ export default function ComparePage() {
                       value={careerB}
                       onChange={(event) => setCareerB(event.target.value)}
                       dir="rtl"
+                      disabled={loadingCareers}
                     >
                       {careers.map((career) => (
                         <option key={career.id} value={career.id}>
@@ -180,7 +192,7 @@ export default function ComparePage() {
                 <div className="mt-8 flex justify-center z-20 relative">
                   <Button 
                     onClick={onCompare} 
-                    disabled={!canCompare || loading}
+                    disabled={!canCompare || loading || loadingCareers}
                     className="h-12 px-8 rounded-full bg-white text-black hover:bg-white/90 font-bold transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] disabled:opacity-50"
                   >
                     {loading ? (

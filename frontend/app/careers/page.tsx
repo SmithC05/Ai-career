@@ -1,17 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Search, Filter, Briefcase, TrendingUp, ArrowRight, Bookmark, BookmarkCheck } from "lucide-react";
+import { Search, Filter, TrendingUp, Bookmark, BookmarkCheck } from "lucide-react";
 
+import { CareerCard } from "@/components/career-card";
+import { CareerCardSkeleton } from "@/components/career-card-skeleton";
 import { EmptyState } from "@/components/empty-state";
 import { FeedbackBanner } from "@/components/feedback-banner";
 import { JourneyStepper } from "@/components/journey-stepper";
 import { NextStepCard } from "@/components/next-step-card";
+import { PageContainer } from "@/components/page-container";
 import { PageHeader } from "@/components/page-header";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { FadeIn, SlideUp, StaggerChildren, StaggerItem } from "@/components/motion";
 import { AnimatedLoader } from "@/components/animated-loader";
@@ -54,9 +54,12 @@ export default function CareersPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!ready) return;
+    setLoading(true);
+    setError(null);
 
     Promise.all([api.getCareers(), api.getDashboard()])
       .then(([careerList, dashboard]) => {
@@ -64,7 +67,10 @@ export default function CareersPage() {
         setSavedCareerIds(new Set(dashboard.savedCareers.map((career) => career.id)));
         setFlowState(getGuidedFlowState());
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load careers"));
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Unable to load career data. Please try again.")
+      )
+      .finally(() => setLoading(false));
   }, [ready]);
 
   const filteredCareers = useMemo(() => {
@@ -99,7 +105,7 @@ export default function CareersPage() {
       setMessage("Career saved successfully. You can now compare it on the dashboard.");
       setTimeout(() => setMessage(null), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save career");
+      setError(err instanceof Error ? err.message : "Unable to save this career right now. Please try again.");
     } finally {
       setSavingId(null);
     }
@@ -108,7 +114,7 @@ export default function CareersPage() {
   if (!ready) return <AnimatedLoader text="Loading careers..." fullScreen />;
 
   return (
-    <div className="flex flex-col gap-10 pb-24 relative">
+    <PageContainer>
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/10 via-background to-background pointer-events-none" />
 
       <FadeIn>
@@ -178,7 +184,13 @@ export default function CareersPage() {
         {error && <FeedbackBanner message={error} tone="error" className="mb-2" />}
         {message && <FeedbackBanner message={message} tone="success" className="mb-2" />}
 
-        {filteredCareers.length === 0 ? (
+        {loading ? (
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <CareerCardSkeleton key={`career-skeleton-${idx}`} />
+            ))}
+          </div>
+        ) : filteredCareers.length === 0 ? (
           <SlideUp delay={0.3}>
             <EmptyState
               title="No careers found"
@@ -207,64 +219,34 @@ export default function CareersPage() {
 
               return (
                 <StaggerItem key={career.id}>
-                  <Card className="h-full border-white/10 bg-white/[0.02] backdrop-blur-xl shadow-glass flex flex-col group hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(99,102,241,0.2)] hover:bg-white/[0.04] transition-all duration-300 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    
-                    <CardHeader className="p-6 pb-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-1.5">
-                          <CardTitle className="text-xl font-bold leading-tight line-clamp-2 text-white group-hover:text-indigo-300 transition-colors">
-                            {career.careerName}
-                          </CardTitle>
-                          <Badge variant="outline" className="bg-indigo-500/10 text-indigo-300 border-indigo-500/20 text-xs font-semibold uppercase tracking-wide">
-                            {category}
-                          </Badge>
-                        </div>
-                        <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          className={`shrink-0 rounded-full h-10 w-10 transition-colors ${isSaved ? 'text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20' : 'text-white/40 hover:text-white hover:bg-white/10'}`}
-                          disabled={isSaved || isSaving}
-                          onClick={(e) => {
-                             e.preventDefault();
-                             onSave(career.id);
-                          }}
-                          title={isSaved ? "Saved to Dashboard" : "Save Career"}
-                        >
-                           {isSaved ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent className="p-6 pt-2 flex flex-col flex-1">
-                      <div className="space-y-4 mb-8">
-                        <div className="grid grid-cols-2 gap-4 border-t border-b border-white/5 py-3">
-                           <div>
-                             <p className="text-[10px] uppercase font-black tracking-widest text-white/40 mb-1">Avg Salary</p>
-                             <p className="font-bold text-white">${career.avgSalary.toLocaleString()}</p>
-                           </div>
-                           <div>
-                             <p className="text-[10px] uppercase font-black tracking-widest text-white/40 mb-1">Growth</p>
-                             <p className="font-bold text-emerald-400">{career.growthRate}</p>
-                           </div>
-                        </div>
-                        <div>
-                           <p className="text-[10px] uppercase font-black tracking-widest text-white/40 mb-1">Difficulty</p>
-                           <Badge variant="secondary" className="bg-white/5 text-white/70">
-                             {career.difficulty} Focus Required
-                           </Badge>
-                        </div>
-                      </div>
-
-                      <div className="mt-auto">
-                        <Link href={`/careers/${career.id}`} className="block">
-                          <Button className="w-full bg-white text-black hover:bg-white/90 font-bold group/btn flex items-center justify-center gap-2 h-11">
-                            Explore Profile <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <CareerCard
+                    title={career.careerName}
+                    category={category}
+                    salary={career.avgSalary}
+                    growthRate={career.growthRate}
+                    difficulty={career.difficulty}
+                    href={`/careers/${career.id}`}
+                    actionLabel="Explore Profile"
+                    leadingAction={
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className={`shrink-0 rounded-full h-10 w-10 transition-colors ${
+                          isSaved
+                            ? "text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20"
+                            : "text-white/40 hover:text-white hover:bg-white/10"
+                        }`}
+                        disabled={isSaved || isSaving}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          onSave(career.id);
+                        }}
+                        title={isSaved ? "Saved to Dashboard" : "Save Career"}
+                      >
+                        {isSaved ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
+                      </Button>
+                    }
+                  />
                 </StaggerItem>
               );
             })}
@@ -280,6 +262,6 @@ export default function CareersPage() {
           helperText="After shortlisting roles, analyze your current skills against your target role."
         />
       </SlideUp>
-    </div>
+    </PageContainer>
   );
 }

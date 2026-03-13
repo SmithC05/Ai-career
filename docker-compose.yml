@@ -36,15 +36,15 @@ services:
     container_name: acn-ollama-init
     environment:
       OLLAMA_HOST: http://ollama:11434
-      OLLAMA_MODEL_ADVISOR: ${OLLAMA_MODEL_ADVISOR:-llama3:8b}
-      OLLAMA_MODEL_ROADMAP: ${OLLAMA_MODEL_ROADMAP:-mistral}
-      OLLAMA_MODEL_LIGHT: ${OLLAMA_MODEL_LIGHT:-phi3:mini}
+      OLLAMA_MODEL_ADVISOR: ${OLLAMA_MODEL_ADVISOR:-qwen2.5:0.5b}
+      OLLAMA_MODEL_ROADMAP: ${OLLAMA_MODEL_ROADMAP:-qwen2.5:0.5b}
+      OLLAMA_MODEL_LIGHT: ${OLLAMA_MODEL_LIGHT:-qwen2.5:0.5b}
     entrypoint: ["/bin/sh", "-c"]
     command:
       - >
-        ollama pull ${OLLAMA_MODEL_ADVISOR:-llama3:8b} &&
-        ollama pull ${OLLAMA_MODEL_ROADMAP:-mistral} &&
-        ollama pull ${OLLAMA_MODEL_LIGHT:-phi3:mini}
+        ollama pull ${OLLAMA_MODEL_ADVISOR:-qwen2.5:0.5b} &&
+        ollama pull ${OLLAMA_MODEL_ROADMAP:-qwen2.5:0.5b} &&
+        ollama pull ${OLLAMA_MODEL_LIGHT:-qwen2.5:0.5b}
     depends_on:
       ollama:
         condition: service_healthy
@@ -57,9 +57,13 @@ services:
     container_name: acn-ai-service
     environment:
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
-      OLLAMA_MODEL_ADVISOR: ${OLLAMA_MODEL_ADVISOR:-llama3:8b}
-      OLLAMA_MODEL_ROADMAP: ${OLLAMA_MODEL_ROADMAP:-mistral}
-      OLLAMA_MODEL_LIGHT: ${OLLAMA_MODEL_LIGHT:-phi3:mini}
+      OLLAMA_MODEL_ADVISOR: ${OLLAMA_MODEL_ADVISOR:-qwen2.5:0.5b}
+      OLLAMA_MODEL_ROADMAP: ${OLLAMA_MODEL_ROADMAP:-qwen2.5:0.5b}
+      OLLAMA_MODEL_LIGHT: ${OLLAMA_MODEL_LIGHT:-qwen2.5:0.5b}
+      OLLAMA_TIMEOUT_SECONDS: ${OLLAMA_TIMEOUT_SECONDS:-12}
+      OLLAMA_REQUEST_DEADLINE_SECONDS: ${OLLAMA_REQUEST_DEADLINE_SECONDS:-8}
+      OLLAMA_NUM_CTX: ${OLLAMA_NUM_CTX:-2048}
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-30m}
     ports:
       - "${AI_SERVICE_PORT:-8000}:8000"
     depends_on:

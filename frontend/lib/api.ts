@@ -10,6 +10,7 @@ import {
   GeneratedRoadmapResponse,
   GeneratedResumePortfolioResponse,
   LearningPathListItem,
+  QuizSubmitResponse,
   ResumePortfolioListItem,
   SkillGapResult,
 } from "@/types";
@@ -76,6 +77,13 @@ export const api = {
   getCareers: () => request<CareerSummary[]>("/careers", { auth: true }),
 
   getCareerById: (careerId: string) => request<CareerDetail>(`/careers/${careerId}`, { auth: true }),
+
+  submitQuiz: (answers: Record<string, string>) =>
+    request<QuizSubmitResponse>("/quiz/submit", {
+      method: "POST",
+      auth: true,
+      body: { answers },
+    }),
 
   compareCareers: (careerA: string, careerB: string) =>
     request<CareerComparison>(`/careers/compare?careerA=${careerA}&careerB=${careerB}`, { auth: true }),

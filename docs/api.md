@@ -33,6 +33,10 @@ Base path (backend): `/api/v1`
 - `POST /dashboard/saved-careers/{careerId}`
 - `DELETE /dashboard/saved-careers/{careerId}`
 
+## Career Quiz
+
+- `POST /quiz/submit`
+
 ## Roadmaps
 
 - `POST /roadmaps/generate`

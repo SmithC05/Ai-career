@@ -2,16 +2,14 @@
 
 import { FormEvent, useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Bot, SendHorizonal, Sparkles, MessageSquare } from "lucide-react";
+import { User, Bot, SendHorizonal, MessageSquare } from "lucide-react";
 
-import { EmptyState } from "@/components/empty-state";
 import { FeedbackBanner } from "@/components/feedback-banner";
 import { JourneyStepper } from "@/components/journey-stepper";
 import { NextStepCard } from "@/components/next-step-card";
-import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { FadeIn, SlideUp } from "@/components/motion";
 import { AnimatedLoader } from "@/components/animated-loader";
@@ -40,10 +38,12 @@ export default function AdvisorPage() {
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!ready) return;
+    setLoadingHistory(true);
 
     api.getAdvisorHistory()
       .then((history) => {
@@ -54,7 +54,10 @@ export default function AdvisorPage() {
           setFlowState(getGuidedFlowState());
         }
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load advisor history"));
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Unable to load advisor history. Please try again.")
+      )
+      .finally(() => setLoadingHistory(false));
   }, [ready]);
 
   useEffect(() => {
@@ -63,7 +66,7 @@ export default function AdvisorPage() {
     }
   }, [chat, loading]);
 
-  if (!ready) return null;
+  if (!ready) return <AnimatedLoader text="Loading AI advisor..." fullScreen />;
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -87,7 +90,7 @@ export default function AdvisorPage() {
       setFlowState(setGuidedFlowState({ advisorUsed: true }));
     } catch (err) {
       setChat(prev => prev.filter(msg => msg.id !== tempId));
-      setError(err instanceof Error ? err.message : "Failed to fetch advice");
+      setError(err instanceof Error ? err.message : "Unable to fetch advice right now. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -120,7 +123,9 @@ export default function AdvisorPage() {
         
         {/* Chat History */}
         <div className="flex-1 space-y-8 pb-4">
-          {chat.length === 0 && !loading ? (
+          {loadingHistory ? (
+            <AnimatedLoader text="Loading chat history..." />
+          ) : chat.length === 0 && !loading ? (
              <SlideUp delay={0.2} className="w-full">
                <Card className="p-12 text-center border-dashed border-white/10 bg-white/[0.01]">
                   <Bot className="w-12 h-12 text-white/10 mx-auto mb-6" />
@@ -263,7 +268,6 @@ export default function AdvisorPage() {
                   </Button>
                 </form>
 
-                {!ready && <AnimatedLoader text="Connecting to AI Advisor..." fullScreen />}
               </CardContent>
             </Card>
           </SlideUp>

@@ -5,19 +5,27 @@ from app.config import settings
 
 
 class OllamaClient:
-    async def generate(self, model: str, prompt: str) -> str:
+    async def generate(self, model: str, prompt: str, *, max_tokens: int | None = None) -> str:
+        options = {
+            "temperature": 0.2,
+            "top_p": 0.9,
+            "num_ctx": settings.ollama_num_ctx,
+        }
+
+        if max_tokens is not None:
+            options["num_predict"] = max_tokens
+
         payload = {
             "model": model,
             "prompt": prompt,
             "stream": False,
-            "options": {
-                "temperature": 0.2,
-                "top_p": 0.9,
-            },
+            "keep_alive": settings.ollama_keep_alive,
+            "options": options,
         }
 
         try:
-            async with httpx.AsyncClient(timeout=settings.ollama_timeout_seconds) as client:
+            timeout = httpx.Timeout(settings.ollama_timeout_seconds, connect=5.0)
+            async with httpx.AsyncClient(timeout=timeout) as client:
                 response = await client.post(f"{settings.ollama_base_url}/api/generate", json=payload)
                 response.raise_for_status()
                 data = response.json()

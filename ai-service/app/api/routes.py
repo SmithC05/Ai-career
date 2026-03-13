@@ -1,6 +1,7 @@
 import asyncio
+import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from app.config import settings
 from app.schemas import (
@@ -20,6 +21,13 @@ from app.schemas import (
     SkillGapAnalysisResponse,
 )
 from app.services.ollama_client import OllamaClient
+from app.services.fallbacks import (
+    build_fallback_career_advice_response,
+    build_fallback_learning_path_response,
+    build_fallback_resume_portfolio_response,
+    build_fallback_roadmap_response,
+    build_fallback_skill_gap_response,
+)
 from app.services.prompt_builder import (
     build_career_advice_prompt,
     build_learning_path_prompt,
@@ -32,6 +40,13 @@ from app.services.prompt_builder import (
 
 router = APIRouter()
 ollama_client = OllamaClient()
+logger = logging.getLogger(__name__)
+
+CAREER_ADVICE_MAX_TOKENS = 180
+SKILL_GAP_MAX_TOKENS = 180
+ROADMAP_MAX_TOKENS = 260
+LEARNING_PATH_MAX_TOKENS = 260
+RESUME_MAX_TOKENS = 260
 
 
 def to_int(value: object, default: int) -> int:
@@ -41,12 +56,23 @@ def to_int(value: object, default: int) -> int:
         return default
 
 
+def request_deadline_seconds() -> int:
+    return max(1, min(settings.ollama_timeout_seconds, settings.ollama_request_deadline_seconds))
+
+
 @router.post("/career-advice", response_model=CareerAdviceResponse)
 async def career_advice(payload: CareerAdviceRequest) -> CareerAdviceResponse:
     prompt = build_career_advice_prompt(payload.question)
-    raw_response = await ollama_client.generate(settings.ollama_model_advisor, prompt)
 
     try:
+        raw_response = await asyncio.wait_for(
+            ollama_client.generate(
+                settings.ollama_model_advisor,
+                prompt,
+                max_tokens=CAREER_ADVICE_MAX_TOKENS,
+            ),
+            timeout=request_deadline_seconds(),
+        )
         parsed = extract_json(raw_response)
         return CareerAdviceResponse(
             answer=str(parsed.get("answer", "Focus on fundamentals and build portfolio projects.")),
@@ -54,15 +80,23 @@ async def career_advice(payload: CareerAdviceRequest) -> CareerAdviceResponse:
             nextSteps=to_str_list(parsed.get("nextSteps")),
         )
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Failed to parse AI output: {exc}") from exc
+        logger.exception("Career advice generation failed; returning fallback response")
+        return build_fallback_career_advice_response(payload)
 
 
 @router.post("/skill-gap-analysis", response_model=SkillGapAnalysisResponse)
 async def skill_gap_analysis(payload: SkillGapAnalysisRequest) -> SkillGapAnalysisResponse:
     prompt = build_skill_gap_prompt(payload.targetCareer, payload.currentSkills)
-    raw_response = await ollama_client.generate(settings.ollama_model_light, prompt)
 
     try:
+        raw_response = await asyncio.wait_for(
+            ollama_client.generate(
+                settings.ollama_model_light,
+                prompt,
+                max_tokens=SKILL_GAP_MAX_TOKENS,
+            ),
+            timeout=request_deadline_seconds(),
+        )
         parsed = extract_json(raw_response)
         missing_skills = to_str_list(parsed.get("missingSkills"))
         recommendations = to_str_list(parsed.get("recommendations"))
@@ -74,15 +108,26 @@ async def skill_gap_analysis(payload: SkillGapAnalysisRequest) -> SkillGapAnalys
             recommendations=recommendations,
         )
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Failed to parse AI output: {exc}") from exc
+        logger.exception(
+            "Skill gap generation failed for target career '%s'; returning fallback response",
+            payload.targetCareer,
+        )
+        return build_fallback_skill_gap_response(payload)
 
 
 @router.post("/roadmap-generator", response_model=RoadmapGeneratorResponse)
 async def roadmap_generator(payload: RoadmapGeneratorRequest) -> RoadmapGeneratorResponse:
     prompt = build_roadmap_prompt(payload.targetCareer, payload.currentSkills, payload.timelineMonths)
-    raw_response = await ollama_client.generate(settings.ollama_model_roadmap, prompt)
 
     try:
+        raw_response = await asyncio.wait_for(
+            ollama_client.generate(
+                settings.ollama_model_roadmap,
+                prompt,
+                max_tokens=ROADMAP_MAX_TOKENS,
+            ),
+            timeout=request_deadline_seconds(),
+        )
         parsed = extract_json(raw_response)
         raw_steps = parsed.get("steps") if isinstance(parsed.get("steps"), list) else []
 
@@ -116,7 +161,11 @@ async def roadmap_generator(payload: RoadmapGeneratorRequest) -> RoadmapGenerato
             steps=steps,
         )
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Failed to parse AI output: {exc}") from exc
+        logger.exception(
+            "Roadmap generation failed for target career '%s'; returning fallback response",
+            payload.targetCareer,
+        )
+        return build_fallback_roadmap_response(payload)
 
 
 @router.post("/personalized-learning-path", response_model=PersonalizedLearningPathResponse)
@@ -130,8 +179,12 @@ async def personalized_learning_path(payload: PersonalizedLearningPathRequest) -
     )
     try:
         raw_response = await asyncio.wait_for(
-            ollama_client.generate(settings.ollama_model_light, prompt),
-            timeout=45,
+            ollama_client.generate(
+                settings.ollama_model_light,
+                prompt,
+                max_tokens=LEARNING_PATH_MAX_TOKENS,
+            ),
+            timeout=request_deadline_seconds(),
         )
         parsed = extract_json(raw_response)
         raw_milestones = parsed.get("milestones") if isinstance(parsed.get("milestones"), list) else []
@@ -176,28 +229,11 @@ async def personalized_learning_path(payload: PersonalizedLearningPathRequest) -
             resources=to_str_list(parsed.get("resources")),
         )
     except Exception:
-        return PersonalizedLearningPathResponse(
-            targetCareer=payload.targetCareer,
-            timelineMonths=payload.timelineMonths,
-            weeklyHours=payload.weeklyHours,
-            learningStyle=payload.learningStyle,
-            summary="A fallback learning path was generated because the model output format was inconsistent.",
-            milestones=[
-                LearningPathMilestone(
-                    week=1,
-                    focus="Foundation",
-                    outcomes=[f"Build core fundamentals for {payload.targetCareer}."],
-                    tasks=["Complete one foundational course module", "Take notes and revise key concepts"],
-                ),
-                LearningPathMilestone(
-                    week=2,
-                    focus="Applied Practice",
-                    outcomes=["Apply concepts in a practical mini project."],
-                    tasks=["Implement one scoped project", "Publish project notes and code on GitHub"],
-                ),
-            ],
-            resources=["Official documentation", "Structured online course", "Project-based practice"],
+        logger.exception(
+            "Learning path generation failed for target career '%s'; returning fallback response",
+            payload.targetCareer,
         )
+        return build_fallback_learning_path_response(payload)
 
 
 @router.post("/resume-portfolio-builder", response_model=ResumePortfolioBuilderResponse)
@@ -214,8 +250,12 @@ async def resume_portfolio_builder(payload: ResumePortfolioBuilderRequest) -> Re
     )
     try:
         raw_response = await asyncio.wait_for(
-            ollama_client.generate(settings.ollama_model_light, prompt),
-            timeout=45,
+            ollama_client.generate(
+                settings.ollama_model_light,
+                prompt,
+                max_tokens=RESUME_MAX_TOKENS,
+            ),
+            timeout=request_deadline_seconds(),
         )
         parsed = extract_json(raw_response)
         raw_sections = parsed.get("resumeSections") if isinstance(parsed.get("resumeSections"), list) else []
@@ -286,28 +326,8 @@ async def resume_portfolio_builder(payload: ResumePortfolioBuilderRequest) -> Re
             atsKeywords=ats_keywords,
         )
     except Exception:
-        return ResumePortfolioBuilderResponse(
-            headline=f"Aspiring {payload.targetCareer}",
-            professionalSummary=(
-                f"{payload.fullName} is building job-ready skills for {payload.targetCareer} and preparing "
-                "a focused resume and portfolio."
-            ),
-            resumeSections=[
-                ResumeSection(heading="Education", bullets=[payload.education]),
-                ResumeSection(heading="Skills", bullets=payload.skills or ["Role-specific fundamentals"]),
-                ResumeSection(
-                    heading="Projects",
-                    bullets=payload.projects or [f"Develop one portfolio project aligned with {payload.targetCareer}"],
-                ),
-            ],
-            portfolioProjects=[
-                PortfolioProject(
-                    name=f"{payload.targetCareer} Portfolio Capstone",
-                    problem="Solve a practical industry problem with measurable impact.",
-                    solution="Build, test, and document an end-to-end solution with clear outcomes.",
-                    stack=payload.skills[:5] if payload.skills else ["Relevant tools and frameworks"],
-                    impact="Demonstrates practical readiness for internships and entry-level roles.",
-                )
-            ],
-            atsKeywords=payload.skills[:10],
+        logger.exception(
+            "Resume builder generation failed for target career '%s'; returning fallback response",
+            payload.targetCareer,
         )
+        return build_fallback_resume_portfolio_response(payload)

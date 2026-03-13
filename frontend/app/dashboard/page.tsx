@@ -10,6 +10,7 @@ import { JourneyStepper } from "@/components/journey-stepper";
 import { NextStepCard } from "@/components/next-step-card";
 import { OnboardingTour } from "@/components/onboarding-tour";
 import { PageHeader } from "@/components/page-header";
+import { ProgressBar } from "@/components/progress-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -153,7 +154,7 @@ export default function DashboardPage() {
   const progress = Math.max(localProgress, analyticsProgress);
   const nextStep = steps.find((step) => !step.done) ?? null;
 
-  if (!ready) return null;
+  if (!ready) return <AnimatedLoader text="Loading dashboard..." fullScreen />;
 
   const analytics = data?.analytics;
 
@@ -276,15 +277,10 @@ export default function DashboardPage() {
                    <Badge variant="outline" className="bg-white/5 text-white/50 border-white/10">This Week</Badge>
                 </div>
                 <p className="text-sm font-semibold text-white/70 mb-2">Weekly Target</p>
-                <div className="flex items-center gap-4">
-                  <p className="text-2xl font-black text-white">{analytics.weeklyProgress}/{analytics.weeklyTarget}</p>
-                  <div className="flex-1 h-2.5 rounded-full bg-white/5 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-sky-400"
-                      style={{ width: `${Math.min(100, (analytics.weeklyProgress / analytics.weeklyTarget) * 100)}%` }}
-                    />
-                  </div>
-                </div>
+                <ProgressBar
+                  value={Math.min(100, (analytics.weeklyProgress / analytics.weeklyTarget) * 100)}
+                  valueLabel={`${analytics.weeklyProgress}/${analytics.weeklyTarget}`}
+                />
               </CardContent>
             </Card>
           </StaggerItem>
@@ -330,15 +326,12 @@ export default function DashboardPage() {
                   { label: "Applied Projects", value: Math.min(100, Math.max(8, progress - 5)), color: "from-indigo-500 to-purple-500" },
                   { label: "Career Readiness", value: Math.min(100, Math.max(5, progress - 25)), color: "from-purple-500 to-rose-500" },
                 ].map((item) => (
-                  <div key={item.label}>
-                    <div className="mb-2 flex items-center justify-between">
-                      <p className="text-sm font-semibold text-white/80">{item.label}</p>
-                      <p className="text-xs font-bold text-white/50">{item.value}%</p>
-                    </div>
-                    <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-                      <div className={`h-full bg-gradient-to-r ${item.color}`} style={{ width: `${item.value}%` }} />
-                    </div>
-                  </div>
+                  <ProgressBar
+                    key={item.label}
+                    label={item.label}
+                    value={item.value}
+                    barClassName={`bg-gradient-to-r ${item.color}`}
+                  />
                 ))}
               </CardContent>
             </Card>
@@ -408,10 +401,10 @@ export default function DashboardPage() {
                 {data && data.roadmaps.length > 0 ? (
                   <div className="space-y-3">
                     {data.roadmaps.map((item) => (
-                      <div key={item.id} className="p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-colors group cursor-pointer" onClick={() => window.location.href='/roadmap'}>
+                      <Link href="/roadmap" key={item.id} className="block p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-colors group">
                         <p className="font-bold text-white group-hover:text-rose-300 transition-colors">{item.title}</p>
                         <p className="text-xs text-white/50 mt-2 line-clamp-2 leading-relaxed">{extractRoadmapSummary(item.content)}</p>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (
@@ -460,10 +453,10 @@ export default function DashboardPage() {
                 {data && (data.learningPaths?.length ?? 0) > 0 ? (
                   <div className="space-y-3">
                     {data.learningPaths.map((item) => (
-                      <div key={item.id} className="p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-colors group cursor-pointer" onClick={() => window.location.href='/learning-path'}>
+                      <Link href="/learning-path" key={item.id} className="block p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-colors group">
                         <p className="font-bold text-white group-hover:text-purple-300 transition-colors">{item.title}</p>
                         <p className="text-xs text-white/50 mt-2 line-clamp-2 leading-relaxed">{extractLearningPathSummary(item.content)}</p>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (

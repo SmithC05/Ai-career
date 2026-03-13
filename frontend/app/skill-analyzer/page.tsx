@@ -33,11 +33,12 @@ export default function SkillAnalyzerPage() {
   const ready = useAuthGuard();
   const [careers, setCareers] = useState<CareerSummary[]>([]);
   const [careerId, setCareerId] = useState("");
-  const [skillsInput, setSkillsInput] = useState("Python, SQL");
+  const [skillsInput, setSkillsInput] = useState("");
   const [result, setResult] = useState<SkillGapResult | null>(null);
   const [flowState, setFlowState] = useState<GuidedFlowState>(defaultFlow);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingCareers, setLoadingCareers] = useState(true);
 
   const selectedCareer = useMemo(
     () => careers.find((career) => career.id === careerId) ?? null,
@@ -56,16 +57,18 @@ export default function SkillAnalyzerPage() {
   useEffect(() => {
     if (!ready) return;
     setFlowState(getGuidedFlowState());
+    setLoadingCareers(true);
 
     api.getCareers()
       .then((items) => {
         setCareers(items);
         if (items.length > 0) setCareerId(items[0].id);
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load careers"));
+      .catch((err) => setError(err instanceof Error ? err.message : "Unable to load careers. Please try again."))
+      .finally(() => setLoadingCareers(false));
   }, [ready]);
 
-  if (!ready) return null;
+  if (!ready) return <AnimatedLoader text="Loading skill analyzer..." fullScreen />;
 
   const onAnalyze = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -81,7 +84,7 @@ export default function SkillAnalyzerPage() {
       setResult(response);
       setFlowState(setGuidedFlowState({ skillGapAnalyzed: true }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Skill analysis failed");
+      setError(err instanceof Error ? err.message : "Unable to run skill analysis. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -128,6 +131,7 @@ export default function SkillAnalyzerPage() {
                       className="h-12 w-full appearance-none rounded-xl border border-white/10 bg-black/40 px-4 text-sm text-white/90 transition-all hover:border-white/20 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                       value={careerId}
                       onChange={(event) => setCareerId(event.target.value)}
+                      disabled={loadingCareers || careers.length === 0}
                     >
                       {careers.map((career) => (
                         <option key={career.id} value={career.id} className="bg-background text-foreground">
@@ -163,7 +167,12 @@ export default function SkillAnalyzerPage() {
                 <div className="hidden md:block">
                   <p className="text-sm text-white/40">Ready to proceed?</p>
                 </div>
-                <Button type="submit" disabled={loading} variant="premium" className="h-12 px-8 min-w-[200px]">
+                <Button
+                  type="submit"
+                  disabled={loading || loadingCareers || careers.length === 0}
+                  variant="premium"
+                  className="h-12 px-8 min-w-[200px]"
+                >
                   {loading ? (
                     <span className="flex items-center gap-2"><div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> Analyzing...</span>
                   ) : (
@@ -172,6 +181,7 @@ export default function SkillAnalyzerPage() {
                 </Button>
               </div>
             </form>
+            {loadingCareers ? <AnimatedLoader text="Loading available careers..." className="pt-4" /> : null}
             {error ? <FeedbackBanner message={error} tone="error" className="mt-6" /> : null}
           </CardContent>
         </Card>

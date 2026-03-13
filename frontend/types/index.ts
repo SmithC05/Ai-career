@@ -48,6 +48,20 @@ export type CareerComparison = {
   summary: string;
 };
 
+export type QuizRecommendation = {
+  careerId: string;
+  careerName: string;
+  description: string;
+  category: string;
+  matchPercentage: number;
+  strengths: string[];
+};
+
+export type QuizSubmitResponse = {
+  recommendations: QuizRecommendation[];
+  completedAt: string;
+};
+
 export type CareerAdvice = {
   answer: string;
   suggestedCareers: string[];

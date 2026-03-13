@@ -105,7 +105,7 @@ export default function ProfilePage() {
       };
       setProfile(nextProfile);
       localStorage.setItem(PROFILE_KEY, JSON.stringify(nextProfile));
-      setMessage("Profile saved successfully. Your recommendations will be updated.");
+      setMessage("Profile saved successfully.");
       
       // Clear message after 3 seconds
       setTimeout(() => setMessage(null), 3000);

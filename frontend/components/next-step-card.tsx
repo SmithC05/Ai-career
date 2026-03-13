@@ -7,6 +7,8 @@ type NextStepCardProps = {
   nextStep: string;
   nextHref: string;
   helperText?: string;
+  ctaLabel?: string;
+  disabled?: boolean;
 };
 
 export function NextStepCard({
@@ -14,7 +16,20 @@ export function NextStepCard({
   nextStep,
   nextHref,
   helperText = "Follow the guided journey to maximize your career clarity.",
+  ctaLabel = "Continue",
+  disabled = false,
 }: NextStepCardProps) {
+  const action = (
+    <Button
+      size="sm"
+      variant={disabled ? "outline" : "premium"}
+      className="rounded-full px-5"
+      disabled={disabled}
+    >
+      {ctaLabel}
+    </Button>
+  );
+
   return (
     <div className="spotlight-ring relative overflow-hidden rounded-2xl border border-cyan-300/20 bg-gradient-to-r from-slate-950/75 via-slate-900/80 to-slate-950/70 p-5 shadow-[0_22px_48px_-34px_rgba(0,10,28,0.95)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.24),transparent_52%)]" />
@@ -24,11 +39,13 @@ export function NextStepCard({
         <p className="mt-1 font-display text-xl font-black text-white">{nextStep}</p>
         <p className="mt-2 text-sm text-white/65">{helperText}</p>
       </div>
-      <Link href={nextHref} className="relative z-10 mt-4 inline-flex">
-        <Button size="sm" variant="premium" className="rounded-full px-5">
-          Continue
-        </Button>
-      </Link>
+      {disabled ? (
+        <div className="relative z-10 mt-4 inline-flex">{action}</div>
+      ) : (
+        <Link href={nextHref} className="relative z-10 mt-4 inline-flex">
+          {action}
+        </Link>
+      )}
     </div>
   );
 }

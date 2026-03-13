@@ -43,14 +43,15 @@ function parseLearningPath(content: string): LearningPathResult | null {
 export default function LearningPathPage() {
   const ready = useAuthGuard();
 
-  const [targetCareer, setTargetCareer] = useState("Data Scientist");
-  const [skillsInput, setSkillsInput] = useState("Python, SQL, Statistics");
+  const [targetCareer, setTargetCareer] = useState("");
+  const [skillsInput, setSkillsInput] = useState("");
   const [learningStyle, setLearningStyle] = useState(learningStyleOptions[0]);
   const [weeklyHours, setWeeklyHours] = useState(8);
   const [timelineMonths, setTimelineMonths] = useState(6);
   const [generated, setGenerated] = useState<GeneratedLearningPathResponse | null>(null);
   const [history, setHistory] = useState<LearningPathListItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const currentSkills = useMemo(
@@ -64,6 +65,7 @@ export default function LearningPathPage() {
 
   useEffect(() => {
     if (!ready) return;
+    setLoadingHistory(true);
 
     api.getLearningPaths()
       .then((items) => {
@@ -72,7 +74,10 @@ export default function LearningPathPage() {
           setJourneyState({ generatedLearningPath: true });
         }
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load learning paths"));
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Unable to load learning paths. Please try again.")
+      )
+      .finally(() => setLoadingHistory(false));
   }, [ready]);
 
   const generatePath = async (event: FormEvent<HTMLFormElement>) => {
@@ -107,13 +112,13 @@ export default function LearningPathPage() {
          document.getElementById("generated-path")?.scrollIntoView({ behavior: "smooth" });
       }, 100);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to generate learning path");
+      setError(err instanceof Error ? err.message : "Unable to generate learning path. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!ready) return null;
+  if (!ready) return <AnimatedLoader text="Loading learning path builder..." fullScreen />;
 
   return (
     <div className="flex flex-col gap-10 pb-24 relative">
@@ -149,13 +154,14 @@ export default function LearningPathPage() {
                         <Input 
                           value={targetCareer} 
                           onChange={(event) => setTargetCareer(event.target.value)} 
+                          placeholder="e.g. Data Scientist"
                           className="pl-10 bg-white/[0.03] border-white/10 text-white focus-visible:ring-purple-500/50" 
                           required 
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-white/70">Learning StylePreference</label>
+                      <label className="text-sm font-semibold text-white/70">Learning Style Preference</label>
                       <div className="relative">
                         <Sparkles className="absolute left-3 top-3 h-4 w-4 text-white/30 pointer-events-none" />
                         <select
@@ -178,6 +184,7 @@ export default function LearningPathPage() {
                     <Input 
                       value={skillsInput} 
                       onChange={(event) => setSkillsInput(event.target.value)} 
+                      placeholder="e.g. Python, SQL, Statistics"
                       className="bg-white/[0.03] border-white/10 text-white focus-visible:ring-purple-500/50" 
                       required 
                     />
@@ -351,7 +358,9 @@ export default function LearningPathPage() {
                  <CardTitle className="text-base flex items-center gap-2"><Clock className="w-4 h-4 text-indigo-400" /> Path History</CardTitle>
                </CardHeader>
                <CardContent className="pt-4 p-0">
-                  {history.length === 0 ? (
+                  {loadingHistory ? (
+                    <AnimatedLoader text="Loading path history..." className="py-8" />
+                  ) : history.length === 0 ? (
                     <div className="p-6 text-center text-white/40 text-sm">No saved learning paths yet.</div>
                   ) : (
                     <div className="divide-y divide-white/5 max-h-[600px] overflow-y-auto custom-scrollbar">

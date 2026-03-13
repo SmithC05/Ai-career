@@ -1,0 +1,170 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">AI Career Navigator animated banner</title>
+  <desc id="desc">Animated hero banner showing a modern career guidance platform with flowing connections between quiz, AI, roadmap, and hiring outcomes.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1280" y2="640" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#07111F"/>
+      <stop offset="0.55" stop-color="#10233D"/>
+      <stop offset="1" stop-color="#071923"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="180" y1="420" x2="1080" y2="220" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7DD3FC" stop-opacity="0"/>
+      <stop offset="0.3" stop-color="#7DD3FC" stop-opacity="0.95"/>
+      <stop offset="0.7" stop-color="#34D399" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#34D399" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#173251" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#0B1622" stop-opacity="0.95"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(240 160) rotate(90) scale(160 220)">
+      <stop stop-color="#38BDF8" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#38BDF8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1040 470) rotate(90) scale(180 250)">
+      <stop stop-color="#34D399" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#34D399" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16"/>
+    </filter>
+    <style>
+      .float-slow {
+        animation: floatSlow 8s ease-in-out infinite;
+        transform-origin: center;
+      }
+      .float-fast {
+        animation: floatFast 5.5s ease-in-out infinite;
+        transform-origin: center;
+      }
+      .pulse {
+        animation: pulse 3.2s ease-in-out infinite;
+        transform-origin: center;
+      }
+      .beam {
+        animation: beamShift 4.5s linear infinite;
+      }
+      .dotA {
+        animation: travelA 5s ease-in-out infinite;
+      }
+      .dotB {
+        animation: travelB 5s ease-in-out infinite;
+      }
+      .sparkle {
+        animation: twinkle 2.8s ease-in-out infinite;
+      }
+      .headline {
+        font-family: "Segoe UI", Arial, sans-serif;
+        letter-spacing: 0.02em;
+      }
+      .mono {
+        font-family: Consolas, "Courier New", monospace;
+      }
+      @keyframes floatSlow {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+      @keyframes floatFast {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(10px); }
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 0.75; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.04); }
+      }
+      @keyframes beamShift {
+        0% { stroke-dashoffset: 0; }
+        100% { stroke-dashoffset: -36; }
+      }
+      @keyframes travelA {
+        0% { transform: translate(0px, 0px); opacity: 0; }
+        15% { opacity: 1; }
+        50% { transform: translate(390px, -95px); opacity: 1; }
+        100% { transform: translate(780px, -190px); opacity: 0; }
+      }
+      @keyframes travelB {
+        0% { transform: translate(0px, 0px); opacity: 0; }
+        20% { opacity: 1; }
+        55% { transform: translate(-335px, 20px); opacity: 1; }
+        100% { transform: translate(-670px, 40px); opacity: 0; }
+      }
+      @keyframes twinkle {
+        0%, 100% { opacity: 0.2; }
+        50% { opacity: 0.9; }
+      }
+    </style>
+  </defs>
+
+  <rect width="1280" height="640" rx="32" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1280" height="640" fill="url(#glowA)"/>
+  <rect x="0" y="0" width="1280" height="640" fill="url(#glowB)"/>
+
+  <g filter="url(#blur)" opacity="0.45">
+    <circle cx="260" cy="150" r="54" fill="#38BDF8"/>
+    <circle cx="1035" cy="470" r="64" fill="#34D399"/>
+  </g>
+
+  <g class="sparkle">
+    <circle cx="210" cy="92" r="2.5" fill="#D9F99D"/>
+    <circle cx="1004" cy="132" r="2" fill="#7DD3FC"/>
+    <circle cx="1094" cy="520" r="2.5" fill="#A7F3D0"/>
+    <circle cx="160" cy="480" r="1.8" fill="#E0F2FE"/>
+  </g>
+
+  <path d="M220 406C370 374 468 298 612 300C760 303 856 244 1050 214" stroke="url(#beam)" stroke-width="6" stroke-linecap="round" stroke-dasharray="14 22" class="beam"/>
+  <path d="M262 220C402 248 501 210 628 222C781 236 896 330 1060 360" stroke="#1F4B72" stroke-width="2" stroke-linecap="round" stroke-dasharray="8 18" opacity="0.65" class="beam"/>
+
+  <g class="dotA">
+    <circle cx="220" cy="406" r="6" fill="#7DD3FC"/>
+    <circle cx="220" cy="406" r="14" fill="#7DD3FC" opacity="0.2"/>
+  </g>
+  <g class="dotB">
+    <circle cx="1050" cy="214" r="6" fill="#34D399"/>
+    <circle cx="1050" cy="214" r="14" fill="#34D399" opacity="0.18"/>
+  </g>
+
+  <g class="float-slow">
+    <rect x="82" y="126" width="240" height="148" rx="24" fill="url(#card)" stroke="#295072" stroke-width="1.5"/>
+    <text x="114" y="170" fill="#A5F3FC" font-size="18" class="mono">01 / DISCOVERY</text>
+    <text x="114" y="212" fill="#F8FAFC" font-size="34" font-weight="700" class="headline">Quiz + Guidance</text>
+    <text x="114" y="246" fill="#C7D2E0" font-size="18" class="headline">Map interests, strengths,</text>
+    <text x="114" y="270" fill="#C7D2E0" font-size="18" class="headline">and role direction fast.</text>
+  </g>
+
+  <g class="pulse">
+    <rect x="430" y="88" width="422" height="214" rx="30" fill="url(#card)" stroke="#2D6B75" stroke-width="1.5"/>
+    <rect x="456" y="118" width="138" height="32" rx="16" fill="#123A46"/>
+    <text x="482" y="140" fill="#99F6E4" font-size="16" class="mono">AI SERVICE</text>
+    <text x="458" y="188" fill="#F8FAFC" font-size="48" font-weight="800" class="headline">AI Career Navigator</text>
+    <text x="458" y="228" fill="#D0DBE8" font-size="22" class="headline">Roadmaps. Skill gaps. Learning plans.</text>
+    <text x="458" y="258" fill="#D0DBE8" font-size="22" class="headline">Resume + portfolio generation.</text>
+  </g>
+
+  <g class="float-fast">
+    <rect x="936" y="136" width="264" height="170" rx="24" fill="url(#card)" stroke="#2D5B55" stroke-width="1.5"/>
+    <text x="968" y="180" fill="#BBF7D0" font-size="18" class="mono">02 / EXECUTION</text>
+    <text x="968" y="222" fill="#F8FAFC" font-size="34" font-weight="700" class="headline">Roadmap Engine</text>
+    <text x="968" y="256" fill="#C7D2E0" font-size="18" class="headline">Build weekly milestones,</text>
+    <text x="968" y="280" fill="#C7D2E0" font-size="18" class="headline">projects, and outcomes.</text>
+  </g>
+
+  <g class="float-fast">
+    <rect x="166" y="368" width="266" height="156" rx="24" fill="url(#card)" stroke="#274E6C" stroke-width="1.5"/>
+    <text x="198" y="412" fill="#BFDBFE" font-size="18" class="mono">03 / TRACKING</text>
+    <text x="198" y="452" fill="#F8FAFC" font-size="32" font-weight="700" class="headline">Dashboard</text>
+    <text x="198" y="486" fill="#C7D2E0" font-size="18" class="headline">Save careers, monitor</text>
+    <text x="198" y="510" fill="#C7D2E0" font-size="18" class="headline">progress, stay accountable.</text>
+  </g>
+
+  <g class="float-slow">
+    <rect x="826" y="378" width="310" height="160" rx="24" fill="url(#card)" stroke="#2D6B75" stroke-width="1.5"/>
+    <text x="858" y="422" fill="#A7F3D0" font-size="18" class="mono">04 / OUTCOME</text>
+    <text x="858" y="464" fill="#F8FAFC" font-size="32" font-weight="700" class="headline">Job-Ready Output</text>
+    <text x="858" y="498" fill="#C7D2E0" font-size="18" class="headline">From confusion to a guided,</text>
+    <text x="858" y="522" fill="#C7D2E0" font-size="18" class="headline">portfolio-backed career plan.</text>
+  </g>
+
+  <text x="88" y="82" fill="#E2E8F0" font-size="16" class="mono">MICROSERVICES + FASTAPI + SPRING BOOT + NEXT.JS + OLLAMA</text>
+  <rect x="82" y="548" width="1116" height="1" fill="#18354F"/>
+  <text x="82" y="586" fill="#93C5FD" font-size="24" font-weight="700" class="headline">Career guidance that feels like a product, not a pile of endpoints.</text>
+</svg>

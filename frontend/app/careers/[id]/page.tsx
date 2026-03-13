@@ -7,8 +7,9 @@ import { ArrowLeft, Bookmark, TrendingUp, DollarSign, Activity, Shield, Scale, B
 import { FeedbackBanner } from "@/components/feedback-banner";
 import { JourneyStepper } from "@/components/journey-stepper";
 import { NextStepCard } from "@/components/next-step-card";
+import { PageContainer } from "@/components/page-container";
 import { PageHeader } from "@/components/page-header";
-import { Badge } from "@/components/ui/badge";
+import { SkillTag } from "@/components/skill-tag";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FadeIn, SlideUp, StaggerChildren, StaggerItem } from "@/components/motion";
@@ -58,7 +59,7 @@ export default function CareerDetailPage({ params }: PageProps) {
 
     api.getCareerById(params.id)
       .then(setCareer)
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load career"));
+      .catch((err) => setError(err instanceof Error ? err.message : "Unable to load career details. Please try again."));
 
     setFlowState(getGuidedFlowState());
   }, [ready, params.id]);
@@ -76,13 +77,13 @@ export default function CareerDetailPage({ params }: PageProps) {
       setMessage("Career saved successfully. Continue your journey to build a roadmap.");
       setTimeout(() => setMessage(null), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save career");
+      setError(err instanceof Error ? err.message : "Unable to save career right now. Please try again.");
     } finally {
       setSaving(false);
     }
   };
 
-  if (!ready) return null;
+  if (!ready) return <AnimatedLoader text="Loading career profile..." fullScreen />;
 
   if (error && !career) {
     return <FeedbackBanner message={error} tone="error" className="mt-8 mx-4" />;
@@ -101,7 +102,7 @@ export default function CareerDetailPage({ params }: PageProps) {
       : "Evolving Market Status";
 
   return (
-    <div className="flex flex-col gap-10 pb-24 relative">
+    <PageContainer>
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/10 via-background to-background pointer-events-none" />
 
       <FadeIn>
@@ -160,9 +161,7 @@ export default function CareerDetailPage({ params }: PageProps) {
               <div className="flex flex-wrap gap-2.5">
                 {career.requiredSkills.map((skill, i) => (
                   <SlideUp key={skill} delay={0.2 + (i * 0.05)}>
-                    <Badge variant="secondary" className="bg-indigo-500/10 text-indigo-200 border-indigo-500/20 px-4 py-1.5 text-sm font-medium hover:bg-indigo-500/20 transition-colors cursor-default">
-                      {skill}
-                    </Badge>
+                    <SkillTag label={skill} tone="indigo" className="px-4 py-1.5 text-sm hover:bg-indigo-500/20 transition-colors cursor-default" />
                   </SlideUp>
                 ))}
               </div>
@@ -180,6 +179,6 @@ export default function CareerDetailPage({ params }: PageProps) {
           helperText="Now validate your current skills and identify exactly what you need to learn next to bridge the gap."
         />
       </SlideUp>
-    </div>
+    </PageContainer>
   );
 }
