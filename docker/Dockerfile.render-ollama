@@ -1,0 +1,10 @@
+FROM ollama/ollama:latest
+
+# Set a custom directory for models to ensure they are captured in the Docker image layer
+# (because the default /root/.ollama might be declared as a VOLUME in the parent image)
+ENV OLLAMA_MODELS=/models
+
+# Start Ollama in the background, wait for it to boot, and pull the required model
+RUN /bin/sh -c "ollama serve & sleep 3 && ollama pull qwen2.5:0.5b"
+
+EXPOSE 11434

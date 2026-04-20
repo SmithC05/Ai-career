@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/career_nav}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:career_nav}}
     username: ${SPRING_DATASOURCE_USERNAME:career_user}
     password: ${SPRING_DATASOURCE_PASSWORD:career_pass}
   sql:

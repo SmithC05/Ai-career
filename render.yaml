@@ -1,0 +1,66 @@
+version: "1"
+
+databases:
+  - name: acn-postgres
+    databaseName: career_nav
+    user: career_user
+    plan: free
+
+services:
+  # Spring Boot Backend
+  - type: web
+    name: acn-backend
+    env: docker
+    dockerfilePath: docker/Dockerfile.backend
+    plan: free
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: acn-postgres
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: acn-postgres
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: acn-postgres
+          property: database
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: acn-postgres
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: acn-postgres
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_BASE_URL
+        value: https://ai-career-topaz.vercel.app
+      - key: AI_SERVICE_BASE_URL
+        value: http://acn-ai-service:8000
+      - key: PORT
+        value: 8080
+
+  # FastAPI AI Service
+  - type: web
+    name: acn-ai-service
+    env: docker
+    dockerfilePath: docker/Dockerfile.ai-service
+    plan: free
+    envVars:
+      - key: OLLAMA_BASE_URL
+        value: http://acn-ollama:11434
+      - key: PORT
+        value: 8000
+
+  # Ollama Model Service
+  - type: web
+    name: acn-ollama
+    env: docker
+    dockerfilePath: docker/Dockerfile.render-ollama
+    plan: free
+    envVars:
+      - key: PORT
+        value: 11434
