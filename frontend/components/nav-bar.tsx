@@ -16,6 +16,8 @@ const authedLinks = [
   { href: "/skill-analyzer", label: "Skill Gap" },
   { href: "/roadmap", label: "Roadmap" },
   { href: "/advisor", label: "AI Advisor" },
+  { href: "/resume-analyser", label: "Resume AI" },
+  { href: "/interview-assistant", label: "Interview" },
 ];
 
 const publicLinks = [

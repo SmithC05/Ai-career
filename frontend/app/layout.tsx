@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
-import { Sora, Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
 import { AmbientBackground } from "@/components/ambient-background";
 import { NavBar } from "@/components/nav-bar";
-
-const sora = Sora({ subsets: ["latin"], variable: "--font-sans" });
-const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-display" });
 
 export const metadata: Metadata = {
   title: "AI Career Navigator",
@@ -20,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${sora.variable} ${spaceGrotesk.variable}`}>
+      <body className="antialiased">
         <AmbientBackground />
         <NavBar />
         <main className="relative z-10 mx-auto w-full max-w-[1240px] px-4 pb-20 pt-28 sm:px-6 lg:px-10 lg:pt-32">

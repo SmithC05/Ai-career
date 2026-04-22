@@ -188,3 +188,47 @@ export type GeneratedResumePortfolioResponse = {
   resumePortfolioId: string;
   resumePortfolio: ResumePortfolioResult;
 };
+
+// ── Resume Analyser ─────────────────────────────────────────────────────────
+
+export type ResumeAnalysis = {
+  id: string;
+  extractedSkills: string[];
+  jobDescription: string | null;
+  matchScore: number;
+  suggestions: string[];
+  improvementAreas: string[];
+  createdAt: string;
+};
+
+// ── Interview Assistant ─────────────────────────────────────────────────────
+
+export type InterviewQuestion = {
+  question: string;
+  type: string;
+  expectedKeywords: string[];
+};
+
+export type InterviewFeedback = {
+  score: number;
+  feedback: string;
+  strengths: string[];
+  improvements: string[];
+} | null;
+
+export type InterviewSession = {
+  id: string;
+  targetRole: string;
+  difficulty: string;
+  questions: InterviewQuestion[];
+  answers: string[];
+  feedback: InterviewFeedback[];
+  createdAt: string;
+};
+
+export type InterviewSessionListItem = {
+  id: string;
+  targetRole: string;
+  difficulty: string;
+  createdAt: string;
+};

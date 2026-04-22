@@ -2,6 +2,8 @@ from fastapi import FastAPI
 
 from app.api.routes import router
 from app.config import settings
+from app.routers.resume_router import resume_router
+from app.routers.interview_router import interview_router
 
 app = FastAPI(
     title=settings.app_name,
@@ -16,3 +18,5 @@ def health() -> dict[str, str]:
 
 
 app.include_router(router)
+app.include_router(resume_router, prefix="/ai")
+app.include_router(interview_router, prefix="/ai")

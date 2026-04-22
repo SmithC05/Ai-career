@@ -67,7 +67,7 @@ public class QuizService {
         for (String selectedOptionId : answers.values()) {
             List<QuizTrack> mappedTracks = OPTION_TRACKS.getOrDefault(selectedOptionId, List.of());
             for (QuizTrack track : mappedTracks) {
-                trackScores.merge(track, 1, Integer::sum);
+                trackScores.merge(track, 1, (a, b) -> a + b);
             }
         }
 

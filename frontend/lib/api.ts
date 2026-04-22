@@ -9,8 +9,12 @@ import {
   GeneratedLearningPathResponse,
   GeneratedRoadmapResponse,
   GeneratedResumePortfolioResponse,
+  InterviewFeedback,
+  InterviewSession,
+  InterviewSessionListItem,
   LearningPathListItem,
   QuizSubmitResponse,
+  ResumeAnalysis,
   ResumePortfolioListItem,
   SkillGapResult,
 } from "@/types";
@@ -157,4 +161,48 @@ export const api = {
     }),
 
   getResumePortfolios: () => request<ResumePortfolioListItem[]>("/resume-portfolio", { auth: true }),
+
+  // ── Resume Analyser ────────────────────────────────────────────────────────
+
+  analyseResume: (formData: FormData) => {
+    const token = getToken();
+    if (!token) return Promise.reject(new Error("Authentication required"));
+    return fetch(`${API_BASE_URL}/resume/analyse`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    }).then(async (res) => {
+      if (!res.ok) {
+        let msg = `Request failed with status ${res.status}`;
+        try { const d = await res.json(); if (d?.message) msg = d.message; } catch { /* ignore */ }
+        throw new Error(msg);
+      }
+      return res.json() as Promise<ResumeAnalysis>;
+    });
+  },
+
+  getResumeAnalysis: (id: string) =>
+    request<ResumeAnalysis>(`/resume/${id}`, { auth: true }),
+
+  // ── Interview Assistant ────────────────────────────────────────────────────
+
+  startInterviewSession: (role: string, difficulty: string) =>
+    request<InterviewSession>("/interview/start", {
+      method: "POST",
+      auth: true,
+      body: { role, difficulty },
+    }),
+
+  evaluateInterviewAnswer: (sessionId: string, questionIndex: number, answer: string) =>
+    request<NonNullable<InterviewFeedback>>("/interview/evaluate", {
+      method: "POST",
+      auth: true,
+      body: { sessionId, questionIndex, answer },
+    }),
+
+  getInterviewSessions: () =>
+    request<InterviewSessionListItem[]>("/interview/sessions", { auth: true }),
+
+  getInterviewSession: (id: string) =>
+    request<InterviewSession>(`/interview/sessions/${id}`, { auth: true }),
 };
