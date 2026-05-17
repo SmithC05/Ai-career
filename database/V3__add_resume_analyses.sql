@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS resume_analyses (
     job_description TEXT,
     match_score INTEGER,
     suggestions JSONB,
-    created_at TIMESTAMP DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_resume_analyses_user ON resume_analyses(user_id);

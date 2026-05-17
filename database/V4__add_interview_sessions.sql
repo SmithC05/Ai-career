@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS interview_sessions (
     questions JSONB,
     answers JSONB,
     feedback JSONB,
-    created_at TIMESTAMP DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_interview_sessions_user ON interview_sessions(user_id);

@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS resume_analyses (
     job_description TEXT,
     match_score INTEGER,
     suggestions JSONB,
-    created_at TIMESTAMP DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_resume_analyses_user ON resume_analyses(user_id);
@@ -55,7 +55,12 @@ CREATE TABLE IF NOT EXISTS interview_sessions (
     questions JSONB,
     answers JSONB,
     feedback JSONB,
-    created_at TIMESTAMP DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS idx_interview_sessions_user ON interview_sessions(user_id);
+
+-- Migration/fix for existing tables if they were created with TIMESTAMP instead of TIMESTAMPTZ
+ALTER TABLE resume_analyses ALTER COLUMN created_at TYPE TIMESTAMPTZ;
+ALTER TABLE interview_sessions ALTER COLUMN created_at TYPE TIMESTAMPTZ;
+
