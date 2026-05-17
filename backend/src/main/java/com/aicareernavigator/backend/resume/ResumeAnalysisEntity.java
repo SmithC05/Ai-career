@@ -12,6 +12,8 @@ import jakarta.persistence.Table;
 
 import java.time.Instant;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "resume_analyses")
@@ -28,6 +30,7 @@ public class ResumeAnalysisEntity {
     @Column(name = "raw_text", columnDefinition = "text")
     private String rawText;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "extracted_skills", columnDefinition = "jsonb")
     private String extractedSkills;
 
@@ -37,6 +40,7 @@ public class ResumeAnalysisEntity {
     @Column(name = "match_score")
     private Integer matchScore;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String suggestions;
 
